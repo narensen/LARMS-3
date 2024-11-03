@@ -29,7 +29,7 @@ The system combines:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/LARMS.git
+git clone https://github.com/narensen/LARMS-1.2.git
 cd LARMS
 ```
 
