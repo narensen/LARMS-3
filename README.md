@@ -1,8 +1,9 @@
 # LARMS (Large Language Models for Remedying Mental Status)
-
-LARMS is an AI-powered mental health support chatbot that uses advanced language models and semantic similarity to provide empathetic and contextually relevant responses to users expressing mental health concerns.
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+LARMS is an AI-powered mental health support chatbot that uses advanced language models and semantic similarity to provide empathetic and contextually relevant responses to users expressing mental health concerns.
+
 ## Overview
 
 The system combines:
