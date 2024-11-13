@@ -56,7 +56,7 @@ This will generate the necessary `merged_dataset.csv` file that LARMS requires t
 
 1. Replace the Groq API key in `LARMS.py` with your own:
 ```python
-groq_api_key = "your_api_key_here"
+groq_api_key = "your_api_key"
 ```
 
 2. Ensure the `corpus` folder contains:
