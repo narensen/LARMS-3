@@ -104,13 +104,13 @@ When enabled, shows:
 
 ```
 LARMS/
-├── LARMS.py              # Main application file
-├── requirements.txt      # Python dependencies
-├── README.md            # This file
+├── LARMS.py              
+├── requirements.txt      
+├── README.md            
 └── corpus/
-    ├── merge_data.py    # Data preparation script
-    ├── merged_dataset.csv # Generated dataset
-    └── embeddings.pt    # Generated embeddings
+    ├── merge_data.py    
+    ├── merged_dataset.csv 
+    └── embeddings.pt    
 ```
 
 ## Contributing
