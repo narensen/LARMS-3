@@ -88,14 +88,13 @@ if groq_api_key:
                 st.write("Similarity Score:", f"{similarity_score:.4f}")
                 st.write("Current Temperature:", f"{st.session_state.temperature:.1f}")
         
-        prompt = f"""You are an AI-powered chatbot named Lifey or virtual assistant that leverages natural language understanding and empathy to provide mental health and emotional support. You should not respond to any other kind of questions which are unrelated to mental health and life.
+        prompt = f"""You are an AI-powered chatbot or virtual assistant that leverages natural language understanding and empathy to provide mental health and emotional support. You should not respond to any other kind of questions which are unrelated to mental health and life.
 
         User question: {user_question}
         Similar context from database: {similar_context}
         Suggested response: {similar_response}
         Similarity score: {similarity_score}
         Current temperature: {st.session_state.temperature}
-
         {'Since this is in experiment mode, please start your response with "EXPERIMENT MODE [Temp: ' + str(st.session_state.temperature) + '] - " and include the similarity score and suggested response in your analysis.' if st.session_state.experiment_mode else 'Please provide a response to the user\'s question, taking into account the similar context and suggested response if they are relevant. If the similarity score is low, you may disregard the suggested context and response.'}"""
 
         st.session_state.conversation_history.append({"role": "user", "content": user_question})
