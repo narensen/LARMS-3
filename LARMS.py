@@ -5,8 +5,358 @@ import os
 from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer, util
 
+# Inject custom CSS to ensure full styling
+st.markdown(
+    """
+    <style>
+    /* Main App Background and Text */
+    .stApp {
+        background-color: #ffffff !important;
+        color: black !important;
+    }
+
+    /* Sidebar Background and Text */
+    section[data-testid="stSidebar"] {
+        background-color: #f8f9fa !important;
+        color: black !important;
+        border-right: 1px solid #e9ecef !important;
+    }
+    section[data-testid="stSidebar"] .css-17eq0hr {
+        color: black !important;
+    }
+
+    /* Header (Deploy Section) Background and Text */
+    header[data-testid="stHeader"] {
+        background-color: #ffffff !important;
+        color: black !important;
+    }
+
+    /* Make all titles and headers bold and black */
+    h1, h2, h3, h4, h5, h6, .stTitle, .stHeader h1, .stHeader h2 {
+        color: black !important;
+        font-weight: 600 !important;
+    }
+
+    /* Specifically target the main title */
+    .stTitle, [data-testid="stMarkdownContainer"] h1 {
+        color: black !important;
+        font-weight: 700 !important;
+        font-size: 2rem !important;
+    }
+
+    /* Make sidebar headers more prominent */
+    .sidebar .stTitle, section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2 {
+        color: black !important;
+        font-weight: 600 !important;
+    }
+
+    /* Style text input and text areas */
+    .stTextInput input, .stTextArea textarea {
+        background-color: #f8f9fa !important;
+        color: #000000 !important;
+        font-weight: 500 !important;
+        border: 1px solid #e9ecef !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+        padding: 12px !important;
+    }
+
+    /* Force black text color for all textareas including disabled ones */
+    textarea {
+        color: #000000 !important;
+    }
+
+    /* Style disabled text areas (AI responses) */
+    .stTextArea textarea:disabled {
+        background-color: #f1f3f5 !important;
+        color: #000000 !important;
+        opacity: 1 !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 8px !important;
+    }
+
+    /* Add hover effect to text areas */
+    .stTextInput input:hover, .stTextArea textarea:hover {
+        background-color: #f1f3f5 !important;
+        border-color: #ced4da !important;
+        transition: all 0.3s ease !important;
+    }
+
+    /* Ensure all text content is black */
+    .css-1v3fvcr, .css-10trblm, .css-1lh0qv1, 
+    .css-1d391kg, .css-1lndpgh, .css-qbe2hs, 
+    .css-1uxlu9e, .css-1u4a9nw {
+        color: black !important;
+        font-weight: 500 !important;
+    }
+
+    /* Style buttons */
+    .stButton button {
+        color: black !important;
+        font-weight: 500 !important;
+        background-color: #f8f9fa !important;
+        border: 1px solid #e9ecef !important;
+        border-radius: 8px !important;
+        padding: 8px 16px !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .stButton button:hover {
+        background-color: #f1f3f5 !important;
+        border-color: #ced4da !important;
+    }
+
+    /* Style markdown text */
+    .element-container, .stMarkdown {
+        color: black !important;
+        font-weight: 500 !important;
+    }
+
+    /* Custom styling for conversation history */
+    [data-testid="stExpander"] {
+        background: linear-gradient(145deg, #f8f9fa, #ffffff) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+        margin: 1rem 0 !important;
+    }
+
+    /* History expander header */
+    .streamlit-expanderHeader {
+        background-color: #f8f9fa !important;
+        border-radius: 12px !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+        color: black !important;
+        font-weight: 600 !important;
+        padding: 1rem !important;
+    }
+
+    /* History content */
+    .streamlit-expanderContent {
+        background-color: #ffffff !important;
+        border-radius: 0 0 12px 12px !important;
+        padding: 1rem !important;
+    }
+
+    /* Individual message styling in history */
+    .streamlit-expanderContent p {
+        padding: 0.8rem !important;
+        margin: 0.5rem 0 !important;
+        border-radius: 8px !important;
+        background-color: #f8f9fa !important;
+        border-left: 4px solid #4a90e2 !important;
+    }
+
+    /* User message styling */
+    .streamlit-expanderContent p strong:contains("You:") {
+        color: #2c5282 !important;
+    }
+
+    /* AI message styling */
+    .streamlit-expanderContent p strong:contains("LARMS:") {
+        color: #38a169 !important;
+    }
+
+    /* Style slider */
+    .stSlider {
+        background-color: #ffffff !important;
+        padding: 10px !important;
+        border-radius: 8px !important;
+        border: 1px solid #e9ecef !important;
+    }
+
+    /* Style toggle switch */
+    .stCheckbox {
+        background-color: #f8f9fa !important;
+        padding: 10px !important;
+        border-radius: 8px !important;
+        border: 1px solid #e9ecef !important;
+    }
+
+    /* Style dataframe/table */
+    .dataframe {
+        background-color: #f8f9fa !important;
+        border: 1px solid #e9ecef !important;
+        border-radius: 8px !important;
+    }
+
+    /* Style select boxes */
+    .stSelectbox {
+        background-color: #f8f9fa !important;
+        border-radius: 8px !important;
+    }
+
+    .stSelectbox > div > div {
+        background-color: #f8f9fa !important;
+        border: 1px solid #e9ecef !important;
+    }
+
+    /* Add padding to containers */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    /* Customize scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f3f5;
+        border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #ced4da;
+        border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #adb5bd;
+    }
+        /* Force black text color for ALL textareas and their content */
+    textarea, .stTextArea textarea, div[data-baseweb="textarea"] textarea {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+
+    /* Specifically target the response textarea */
+    .stTextArea div[data-baseweb="textarea"] textarea,
+    .stTextArea textarea[disabled],
+    .stTextArea textarea:disabled {
+        background-color: #f1f3f5 !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        opacity: 1 !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 8px !important;
+    }
+
+    /* Additional override for any possible default styles */
+    .stTextArea textarea::placeholder,
+    .stTextArea textarea:disabled::placeholder {
+        color: #6c757d !important;
+        -webkit-text-fill-color: #6c757d !important;
+    }
+
+    /* Override any webkit autofill styles */
+    .stTextArea textarea:-webkit-autofill,
+    .stTextArea textarea:-webkit-autofill:hover,
+    .stTextArea textarea:-webkit-autofill:focus {
+        -webkit-text-fill-color: #000000 !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    /* Fix for Temperature and other labels */
+    .stMarkdown div p, .stMarkdown div span {
+        color: black !important;
+    }
+
+    /* Target all text elements in the app */
+    div:not(.streamlit-expanderContent) p,
+    div span,
+    label span,
+    .stMarkdown p,
+    .stMarkdown span,
+    .stSlider p,
+    .stSlider span {
+        color: black !important;
+    }
+
+    /* Target specifically the temperature value */
+    .stSlider [data-testid="stMarkdownContainer"] p {
+        color: black !important;
+        font-weight: 500 !important;
+    }
+
+    /* Experiment mode and other toggle text */
+    .stCheckbox label span {
+        color: black !important;
+        font-weight: 500 !important;
+    }
+
+    /* Fix for all input labels */
+    .stTextInput label,
+    .stTextArea label,
+    .stSlider label {
+        color: black !important;
+        font-weight: 500 !important;
+    }
+
+    /* Target any remaining text elements */
+    [data-baseweb="input"] div,
+    [data-baseweb="textarea"] div,
+    [data-testid="stText"] p {
+        color: black !important;
+    }
+
+    /* Force all text inputs and areas to be black */
+    input, textarea {
+        color: black !important;
+        -webkit-text-fill-color: black !important;
+    }
+
+    /* Ensure experiment mode text is black */
+    .stText, .stText p {
+        color: black !important;
+        font-weight: 500 !important;
+    }
+
+    /* Additional styling for better visibility */
+    .stApp label, .stApp span {
+        color: black !important;
+    }
+   /* Style toggle/checkbox - General container */
+    .stCheckbox {
+        background-color: #f8f9fa !important;
+        padding: 10px !important;
+        border-radius: 8px !important;
+        border: 1px solid #e9ecef !important;
+    }
+
+    /* Style the toggle switch text and background */
+    .stCheckbox > label {
+        color: black !important;
+        font-weight: 500 !important;
+    }
+
+    /* Style the toggle switch container */
+    .stCheckbox > div[role="checkbox"] {
+        background-color: #e9ecef !important;
+    }
+
+    /* Style the toggle switch when checked */
+    .stCheckbox > div[role="checkbox"][aria-checked="true"] {
+        background-color: #4a90e2 !important;
+    }
+
+    /* Style the toggle switch knob */
+    .stCheckbox > div[role="checkbox"]::before {
+        background-color: white !important;
+    }
+
+    /* Additional specific styling for experiment mode toggle */
+    [data-testid="stCheckbox"] {
+        background-color: #f8f9fa !important;
+    }
+
+    [data-testid="stCheckbox"] > label > div {
+        color: black !important;
+        font-weight: 500 !important;
+    }
+
+    /* Force black text color for toggle label */
+    div[data-testid="stCheckbox"] label span {
+        color: black !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 def load_or_compute_embeddings(df, model):
-    embeddings_file = 'corpus/embeddings.pt'
+    embeddings_file = '/home/naren/LARMS-1.2/corpus/embeddings.pt'
     
     if os.path.exists(embeddings_file):
         context_embeddings = torch.load(embeddings_file)
@@ -26,7 +376,7 @@ if 'experiment_mode' not in st.session_state:
 if 'temperature' not in st.session_state:
     st.session_state.temperature = 0.4
 
-df = pd.read_csv('corpus/merged_dataset.csv')
+df = pd.read_csv('/home/naren/LARMS-1.2/corpus/merged_dataset.csv')
 contexts = df['Context'].tolist()
 responses = df['Response'].tolist()
 
@@ -88,13 +438,14 @@ if groq_api_key:
                 st.write("Similarity Score:", f"{similarity_score:.4f}")
                 st.write("Current Temperature:", f"{st.session_state.temperature:.1f}")
         
-        prompt = f"""You are an AI-powered chatbot or virtual assistant that leverages natural language understanding and empathy to provide mental health and emotional support. You should not respond to any other kind of questions which are unrelated to mental health and life.
+        prompt = f"""You are an AI Powered Chatbot who provide remedies to queries, your remedies should always be confident and never sound lacking. always sound emotionally strong and give confidence to the person that the remedy your provide definetely works. You should not respond to any other kind of questions which are unrelated to mental health and life.
 
         User question: {user_question}
         Similar context from database: {similar_context}
         Suggested response: {similar_response}
         Similarity score: {similarity_score}
         Current temperature: {st.session_state.temperature}
+
         {'Since this is in experiment mode, please start your response with "EXPERIMENT MODE [Temp: ' + str(st.session_state.temperature) + '] - " and include the similarity score and suggested response in your analysis.' if st.session_state.experiment_mode else 'Please provide a response to the user\'s question, taking into account the similar context and suggested response if they are relevant. If the similarity score is low, you may disregard the suggested context and response.'}"""
 
         st.session_state.conversation_history.append({"role": "user", "content": user_question})
