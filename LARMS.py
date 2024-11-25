@@ -356,7 +356,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 def load_or_compute_embeddings(df, model):
-    embeddings_file = '/home/naren/LARMS-1.2/corpus/embeddings.pt'
+    embeddings_file = 'corpus/embeddings.pt'
     
     if os.path.exists(embeddings_file):
         context_embeddings = torch.load(embeddings_file)
@@ -376,7 +376,7 @@ if 'experiment_mode' not in st.session_state:
 if 'temperature' not in st.session_state:
     st.session_state.temperature = 0.4
 
-df = pd.read_csv('/home/naren/LARMS-1.2/corpus/merged_dataset.csv')
+df = pd.read_csv('corpus/merged_dataset.csv')
 contexts = df['Context'].tolist()
 responses = df['Response'].tolist()
 
