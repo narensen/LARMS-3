@@ -360,7 +360,7 @@ st.markdown(
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def load_or_compute_embeddings(df, model):
-    embeddings_file = '/home/naren/LARMS-1.2/corpus/embeddings.pt'
+    embeddings_file = 'corpus/embeddings.pt'
     
     if os.path.exists(embeddings_file):
         context_embeddings = torch.load(embeddings_file)
@@ -380,7 +380,7 @@ if 'experiment_mode' not in st.session_state:
 if 'temperature' not in st.session_state:
     st.session_state.temperature = 0.4
 
-df = pd.read_csv('/home/naren/LARMS-1.2/corpus/merged_dataset.csv')
+df = pd.read_csv('corpus/merged_dataset.csv')
 contexts = df['Context'].tolist()
 responses = df['Response'].tolist()
 
@@ -421,7 +421,7 @@ if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = []
 
 with st.spinner("Loading dataset..."):
-    df = pd.read_csv('/home/naren/LARMS-1.2/corpus/merged_dataset.csv')
+    df = pd.read_csv('corpus/merged_dataset.csv')
 
 groq_api_key = "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"
 
