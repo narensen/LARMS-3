@@ -380,7 +380,7 @@ if 'experiment_mode' not in st.session_state:
 if 'temperature' not in st.session_state:
     st.session_state.temperature = 0.4
 
-df = pd.read_csv('corpus/merged_dataset.csv', low_memory=False)
+df = pd.read_csv('corpus/merged_dataset.csv')
 contexts = df['Context'].tolist()
 responses = df['Response'].tolist()
 
