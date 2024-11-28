@@ -363,7 +363,7 @@ def load_or_compute_embeddings(df, model):
     embeddings_file = 'corpus/embeddings.pt'
     
     if os.path.exists(embeddings_file):
-        context_embeddings = torch.load(embeddings_file, weights_only=True)
+        context_embeddings = torch.load(embeddings_file)
         print("Loaded pre-computed embeddings")
     else:
         print("Computing embeddings...")
