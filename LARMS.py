@@ -363,7 +363,7 @@ def load_or_compute_embeddings(df, model):
     embeddings_file = 'corpus/embeddings.pt'
     
     if os.path.exists(embeddings_file):
-        context_embeddings = torch.load(embeddings_file)
+        context_embeddings = torch.load(embeddings_file, weights_only=True))
         print("Loaded pre-computed embeddings")
     else:
         print("Computing embeddings...")
@@ -380,7 +380,7 @@ if 'experiment_mode' not in st.session_state:
 if 'temperature' not in st.session_state:
     st.session_state.temperature = 0.4
 
-df = pd.read_csv('corpus/merged_dataset.csv')
+df = pd.read_csv('corpus/merged_dataset.csv', low_memory=False)
 contexts = df['Context'].tolist()
 responses = df['Response'].tolist()
 
