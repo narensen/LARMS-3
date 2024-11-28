@@ -423,7 +423,7 @@ if 'conversation_history' not in st.session_state:
 with st.spinner("Loading dataset..."):
     df = pd.read_csv('corpus/merged_dataset.csv',  low_memory=False)
 
-groq_api_key = "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"
+groq_api_key = "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"
 
 if groq_api_key:
     groq_chat = ChatGroq(
