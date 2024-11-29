@@ -10,10 +10,8 @@ import time
 HF_TOKEN = "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"
 
 # Initialize the embedding model
-try:
-    embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-except Exception as e:
-    st.error(f"Error loading model: {e}")
+embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+
 
 def initialize_inference_client(model_name, token):
     """
@@ -35,12 +33,27 @@ def load_dataset(file_path):
     return pd.read_csv(file_path, low_memory=False)
 
 
-def load_or_compute_embeddings(df):
+def load_or_compute_embeddings(df, model):
     """
     Load or compute embeddings and refresh them based on a 30-day threshold.
     """
-    embeddings_file = 'corpus/embeddings.pt'    
-    context_embeddings = torch.load(embeddings_file)
+    embeddings_file = '/home/naren/Documents/LARMS-1.2/corpus/embeddings.pt'
+    
+    if os.path.exists(embeddings_file):
+        try:
+            file_age = time.time() - os.path.getmtime(embeddings_file)
+            if file_age > 30 * 24 * 60 * 60:  # Refresh embeddings after 30 days
+                os.remove(embeddings_file)
+        except Exception as e:
+            st.warning(f"Could not check embedding file age: {e}")
+    
+    if os.path.exists(embeddings_file):
+        context_embeddings = torch.load(embeddings_file)
+    else:
+        contexts = df['Context'].tolist()
+        context_embeddings = model.encode(contexts, convert_to_tensor=True)
+        torch.save(context_embeddings, embeddings_file)
+    
     return context_embeddings
 
 
@@ -77,6 +90,10 @@ def generate_model_response(client, prompt, temperature=0.4, max_tokens=500):
 def main():
     st.title("Large Language Models for Remedying Mental Status (LARMS)")
     
+    # Initialize session state for experiment_mode if not already done
+    if "experiment_mode" not in st.session_state:
+        st.session_state.experiment_mode = False
+
     # Sidebar
     with st.sidebar:
         st.header("Model Settings")
@@ -91,7 +108,7 @@ def main():
                 "EleutherAI/gpt-neo-1.3B",
                 "Qwen/Qwen2.5-Coder-32B-Instruct",
                 "meta-llama/Llama-3.2-1B",
-                ],
+            ],
             help="Choose a model to process your query."
         )
         
@@ -106,19 +123,22 @@ def main():
         )
         
         # Experiment mode toggle
-        experiment_mode = st.checkbox("Enable Experiment Mode", value=False)
+        experiment_mode = st.checkbox("Enable Experiment Mode", value=st.session_state.experiment_mode)
+
+        # Update session state for experiment_mode based on user input
+        st.session_state.experiment_mode = experiment_mode
     
     # Session state for conversation history
     if "conversation_history" not in st.session_state:
         st.session_state.conversation_history = []
     
     # Load dataset
-    df = load_dataset('corpus/merged_dataset.csv')
+    df = load_dataset('/home/naren/Documents/LARMS-1.2/corpus/merged_dataset.csv')
     contexts = df['Context'].tolist()
     responses = df['Response'].tolist()
     
     # Compute or load embeddings
-    context_embeddings = load_or_compute_embeddings(df)
+    context_embeddings = load_or_compute_embeddings(df, embedding_model)
     
     # Initialize inference client with selected model
     client = initialize_inference_client(model_name, HF_TOKEN)
@@ -133,19 +153,26 @@ def main():
                 user_question, context_embeddings, contexts, responses
             )
         
-        if experiment_mode:
+        if st.session_state.experiment_mode:
             st.write("**Similar Context:**", similar_context)
             st.write("**Suggested Response:**", similar_response)
             st.write("**Similarity Score:**", f"{similarity_score:.4f}")
-        
-        # Construct prompt
-        prompt = f""""You are an AI-powered chatbot who provides remedies to queries. "
-            "Your remedies should always be confident and emotionally supportive. "
-            "Focus on mental health and provide empathetic, actionable advice."
-        User Question: {user_question}
-        Context: {similar_context}
-        Response: {similar_response}
-        """
+
+            prompt = f"""You are an AI Powered Chatbot who provide remedies to queries, your remedies should always be confident and never sound lacking. Always sound emotionally strong and give confidence to the person that the remedy you provide definitely works. You should not respond to any other kind of questions which are unrelated to mental health and life.
+
+    User question: {user_question}
+    Similar context from database: {similar_context}
+    Suggested response: {similar_response}
+    Similarity score: {similarity_score}
+   
+    Since this is in experiment mode, please start your response with "EXPERIMENT MODE [Temp: {st.session_state.temperature}] - " and include the similarity score and suggested response in your analysis."""
+        else:
+            # Construct prompt
+            prompt = f"""You are an AI Powered Chatbot who provides remedies to queries, your remedies should always be confident and never sound lacking. Always sound emotionally strong and give confidence to the person that the remedy you provide definitely works. You should not respond to any other kind of questions which are unrelated to mental health and life."
+            User Question: {user_question}
+            Context: {similar_context}
+            Response: {similar_response}
+            """
         
         # Generate response
         with st.spinner("Generating AI response..."):
