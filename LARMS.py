@@ -90,10 +90,12 @@ def generate_model_response(client, prompt, temperature=0.4, max_tokens=500):
 def main():
     st.title("Large Language Models for Remedying Mental Status (LARMS)")
     
-    # Initialize session state for experiment_mode if not already done
+    # Initialize session state for experiment_mode and temperature if not already done
     if "experiment_mode" not in st.session_state:
         st.session_state.experiment_mode = False
-
+    if "temperature" not in st.session_state:
+        st.session_state.temperature = 0.4  # Default temperature value
+    
     # Sidebar
     with st.sidebar:
         st.header("Model Settings")
@@ -113,11 +115,11 @@ def main():
         )
         
         # Temperature slider
-        temperature = st.slider(
+        st.session_state.temperature = st.slider(
             "Temperature",
             min_value=0.0,
             max_value=1.0,
-            value=0.4,
+            value=st.session_state.temperature,
             step=0.1,
             help="Higher values make the output more random; lower values make it more deterministic."
         )
@@ -158,7 +160,7 @@ def main():
             st.write("**Suggested Response:**", similar_response)
             st.write("**Similarity Score:**", f"{similarity_score:.4f}")
 
-            prompt = f"""You are an AI Powered Chatbot who provide remedies to queries, your remedies should always be confident and never sound lacking. Always sound emotionally strong and give confidence to the person that the remedy you provide definitely works. You should not respond to any other kind of questions which are unrelated to mental health and life.
+            prompt = f"""You are an AI Powered Chatbot who provides remedies to queries, your remedies should always be confident and never sound lacking. Always sound emotionally strong and give confidence to the person that the remedy you provide definitely works. You should not respond to any other kind of questions which are unrelated to mental health and life.
 
     User question: {user_question}
     Similar context from database: {similar_context}
@@ -176,7 +178,7 @@ def main():
         
         # Generate response
         with st.spinner("Generating AI response..."):
-            ai_response = generate_model_response(client, prompt, temperature=temperature)
+            ai_response = generate_model_response(client, prompt, temperature=st.session_state.temperature)
             st.write("**AI's Response:**", ai_response)
             
             # Update conversation history
