@@ -124,7 +124,7 @@ def main():
     client = initialize_inference_client(model_name, HF_TOKEN)
     
     # User input
-    user_question = st.text_area("How are you feeling today?")
+    user_question = st.text_area("Is there something you want to share with me?")
     
     if user_question and client:
         # Find most similar context
