@@ -118,7 +118,7 @@ def main():
     responses = df['Response'].tolist()
     
     # Compute or load embeddings
-    context_embeddings = load_or_compute_embeddings(df, embedding_model)
+    context_embeddings = load_or_compute_embeddings(df)
     
     # Initialize inference client with selected model
     client = initialize_inference_client(model_name, HF_TOKEN)
