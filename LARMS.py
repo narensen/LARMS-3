@@ -10,8 +10,10 @@ import time
 HF_TOKEN = "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"
 
 # Initialize the embedding model
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-
+try:
+    embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+except Exception as e:
+    st.error(f"Error loading model: {e}")
 
 def initialize_inference_client(model_name, token):
     """
@@ -37,7 +39,7 @@ def load_or_compute_embeddings(df, model):
     """
     Load or compute embeddings and refresh them based on a 30-day threshold.
     """
-    embeddings_file = '/home/naren/Documents/LARMS-1.2/corpus/embeddings.pt'
+    embeddings_file = 'corpus/embeddings.pt'
     
     if os.path.exists(embeddings_file):
         try:
@@ -126,7 +128,7 @@ def main():
         st.session_state.conversation_history = []
     
     # Load dataset
-    df = load_dataset('/home/naren/Documents/LARMS-1.2/corpus/merged_dataset.csv')
+    df = load_dataset('corpus/merged_dataset.csv')
     contexts = df['Context'].tolist()
     responses = df['Response'].tolist()
     
