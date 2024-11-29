@@ -432,7 +432,7 @@ if groq_api_key:
         temperature=st.session_state.temperature  # Use the temperature from the slider
     )
 
-    user_question = st.text_area("How are you feeling today?")
+    user_question = st.text_area("Is there something you want to share with me?")
 
 if user_question:
     # Find the most similar context
