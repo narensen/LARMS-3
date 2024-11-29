@@ -35,27 +35,12 @@ def load_dataset(file_path):
     return pd.read_csv(file_path, low_memory=False)
 
 
-def load_or_compute_embeddings(df, model):
+def load_or_compute_embeddings(df):
     """
     Load or compute embeddings and refresh them based on a 30-day threshold.
     """
-    embeddings_file = 'corpus/embeddings.pt'
-    
-    if os.path.exists(embeddings_file):
-        try:
-            file_age = time.time() - os.path.getmtime(embeddings_file)
-            if file_age > 30 * 24 * 60 * 60:  # Refresh embeddings after 30 days
-                os.remove(embeddings_file)
-        except Exception as e:
-            st.warning(f"Could not check embedding file age: {e}")
-    
-    if os.path.exists(embeddings_file):
-        context_embeddings = torch.load(embeddings_file)
-    else:
-        contexts = df['Context'].tolist()
-        context_embeddings = model.encode(contexts, convert_to_tensor=True)
-        torch.save(context_embeddings, embeddings_file)
-    
+    embeddings_file = 'corpus/embeddings.pt'    
+    context_embeddings = torch.load(embeddings_file)
     return context_embeddings
 
 
