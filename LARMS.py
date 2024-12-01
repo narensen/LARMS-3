@@ -359,8 +359,11 @@ st.markdown(
 
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
+embeddigns_path = "corpus/embeddings.pt"
+merged_path = 'corpus/merged_dataset.csv'
+
 def load_or_compute_embeddings(df, model):
-    embeddings_file = 'corpus/embeddings.pt'
+    embeddings_file = embeddigns_path
     
     if os.path.exists(embeddings_file):
         context_embeddings = torch.load(embeddings_file, weights_only=True)
@@ -380,7 +383,7 @@ if 'experiment_mode' not in st.session_state:
 if 'temperature' not in st.session_state:
     st.session_state.temperature = 0.4
 
-df = pd.read_csv('corpus/merged_dataset.csv')
+df = pd.read_csv(merged_path)
 contexts = df['Context'].tolist()
 responses = df['Response'].tolist()
 
@@ -421,9 +424,9 @@ if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = []
 
 with st.spinner("Loading dataset..."):
-    df = pd.read_csv('corpus/merged_dataset.csv',  low_memory=False)
+    df = pd.read_csv(merged_path,  low_memory=False)
 
-groq_api_key = "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"
+groq_api_key = "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"
 
 if groq_api_key:
     groq_chat = ChatGroq(
