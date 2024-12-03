@@ -7,7 +7,7 @@ LARMS is an AI-powered mental health support chatbot that uses advanced language
 ## Overview
 
 The system combines:
-- Large Language Model (LLama 3.2) for generating responses
+- Selection of multiple Large Language Models for generating responses
 - Sentence transformers for semantic similarity matching
 - A curated dataset of mental health conversations
 - Streamlit for the user interface
