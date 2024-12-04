@@ -5,7 +5,6 @@ import os
 from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer, util
 
-# Inject custom CSS to ensure full styling
 st.markdown(
     """
     <style>
