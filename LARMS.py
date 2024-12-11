@@ -6,7 +6,7 @@ from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer, util
 
 
-st.set_page_config(layout="wide",mode="light")
+st.set_page_config(layout="wide")
 st.markdown("""
     <style>
     .css-1v0mbdj.e16nr0p30 {
