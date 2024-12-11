@@ -68,8 +68,7 @@ with st.sidebar:
     st.write(f"- Temperature: {st.session_state.temperature:.1f}")
     st.write(f"- Experiment Mode: {'On' if st.session_state.experiment_mode else 'Off'}")
 
-with st.spinner("Loading dataset..."):
-    df = pd.read_csv(merged_path, low_memory=False)
+df = pd.read_csv(merged_path, low_memory=False)
 
 contexts = df['Context'].tolist()
 responses = df['Response'].tolist()
