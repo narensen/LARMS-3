@@ -5,6 +5,8 @@ import os
 from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer, util
 
+
+st.set_page_config(layout="wide")
 st.markdown("""
     <style>
     .css-1v0mbdj.e16nr0p30 {
@@ -12,7 +14,6 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-st.set_page_config(layout="wide")
 
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
