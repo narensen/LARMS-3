@@ -81,8 +81,6 @@ if groq_api_key:
     )
 
 # Chat interface
-st.subheader("Chat with LARMS")
-
 def chat_input_area():
     user_question = st.text_input("Type your message here...", key="user_input", label_visibility="collapsed")
     return user_question
