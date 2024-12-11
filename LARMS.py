@@ -5,6 +5,7 @@ import os
 from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer, util
 
+st.set_page_config(layout="wide")
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 embeddigns_path = "corpus/embeddings.pt"
