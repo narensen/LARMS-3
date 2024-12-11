@@ -31,9 +31,8 @@ if 'experiment_mode' not in st.session_state:
 if 'temperature' not in st.session_state:
     st.session_state.temperature = 0.7
 
-df = pd.read_csv(merged_path)
-contexts = df['Context'].tolist()
-responses = df['Response'].tolist()
+if 'conversation_history' not in st.session_state:
+    st.session_state.conversation_history = []
 
 st.title("Large Language Models for Remedying Mental Status")
 
@@ -51,7 +50,7 @@ with st.sidebar:
     st.session_state.temperature = temperature
     
     # Add experiment mode toggle to sidebar
-    experiment_mode = st.toggle("Experiment Mode", value=st.session_state.experiment_mode)
+    experiment_mode = st.checkbox("Experiment Mode", value=st.session_state.experiment_mode)
     st.session_state.experiment_mode = experiment_mode
     
     # Display current settings
@@ -59,7 +58,11 @@ with st.sidebar:
     st.write(f"- Temperature: {st.session_state.temperature:.1f}")
     st.write(f"- Experiment Mode: {'On' if st.session_state.experiment_mode else 'Off'}")
 
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+with st.spinner("Loading dataset..."):
+    df = pd.read_csv(merged_path, low_memory=False)
+
+contexts = df['Context'].tolist()
+responses = df['Response'].tolist()
 context_embeddings = load_or_compute_embeddings(df, embedding_model)
 
 def find_most_similar_context(question, context_embeddings):
@@ -67,12 +70,6 @@ def find_most_similar_context(question, context_embeddings):
     similarities = util.pytorch_cos_sim(question_embedding, context_embeddings)
     most_similar_idx = torch.argmax(similarities).item()
     return contexts[most_similar_idx], responses[most_similar_idx], similarities[0][most_similar_idx].item()
-
-if 'conversation_history' not in st.session_state:
-    st.session_state.conversation_history = []
-
-with st.spinner("Loading dataset..."):
-    df = pd.read_csv(merged_path,  low_memory=False)
 
 groq_api_key = "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"
 
@@ -83,9 +80,26 @@ if groq_api_key:
         temperature=st.session_state.temperature  # Use the temperature from the slider
     )
 
-    user_question = st.text_area("Is there something you want to share with me?")
+# Chat interface
+st.subheader("Chat with LARMS")
+
+def chat_input_area():
+    user_question = st.text_input("Type your message here...", key="user_input", label_visibility="collapsed")
+    return user_question
+
+if st.session_state.conversation_history:
+    for message in st.session_state.conversation_history:
+        if message['role'] == 'user':
+            st.chat_message("user").markdown(message['content'])
+        else:
+            st.chat_message("assistant").markdown(message['content'])
+
+user_question = st.chat_input("Type your message here...")
 
 if user_question:
+    # Add user input to conversation history
+    st.session_state.conversation_history.append({"role": "user", "content": user_question})
+
     # Find the most similar context
     with st.spinner("Finding the most similar context..."):
         similar_context, similar_response, similarity_score = find_most_similar_context(user_question, context_embeddings)
@@ -111,9 +125,6 @@ if user_question:
     
     """
 
-    # Add user input to conversation history
-    st.session_state.conversation_history.append({"role": "user", "content": user_question})
-
     # Generate the AI response
     with st.spinner("Generating AI response..."):
         try:
@@ -123,18 +134,7 @@ if user_question:
             # Add AI response to conversation history
             st.session_state.conversation_history.append({"role": "assistant", "content": ai_response})
 
-            # Display AI response
-            st.text_area("AI's response:", value=ai_response, height=200, disabled=True)
+            # Display AI response dynamically
+            st.chat_message("assistant").markdown(ai_response)
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
-
-# Display previous interactions
-if st.session_state.conversation_history:
-    with st.expander("Show Previous Interactions"):
-        for idx, interaction in enumerate(st.session_state.conversation_history):
-            if interaction['role'] == 'user':
-                st.markdown(f"**You:** {interaction['content']}")
-            else:
-                st.markdown(f"**LARMS:** {interaction['content']}")
-            if idx < len(st.session_state.conversation_history) - 1:
-                st.markdown("---")
