@@ -6,6 +6,13 @@ from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer, util
 
 st.set_page_config(layout="wide")
+st.markdown("""
+    <style>
+    .css-1v0mbdj.e16nr0p30 {
+        visibility: hidden;
+    }
+    </style>
+""", unsafe_allow_html=True)
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 embeddings_path = "corpus/embeddings.pt"
