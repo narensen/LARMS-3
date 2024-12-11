@@ -5,7 +5,6 @@ import os
 from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer, util
 
-
 st.set_page_config(layout="wide")
 st.markdown("""
     <style>
@@ -17,11 +16,11 @@ st.markdown("""
 
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
-embeddigns_path = "corpus/embeddings.pt"
+embeddings_path = "corpus/embeddings.pt"
 merged_path = 'corpus/merged_dataset.csv'
 
 def load_or_compute_embeddings(df, model):
-    embeddings_file = embeddigns_path
+    embeddings_file = embeddings_path
     
     if os.path.exists(embeddings_file):
         context_embeddings = torch.load(embeddings_file, weights_only=True)
@@ -36,38 +35,17 @@ def load_or_compute_embeddings(df, model):
     return context_embeddings
 
 # Initialize session states
-if 'experiment_mode' not in st.session_state:
-    st.session_state.experiment_mode = False
-if 'temperature' not in st.session_state:
-    st.session_state.temperature = 0.7
-
 if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = []
 
 st.title("Large Language Models for Remedying Mental Status")
 
+# Sidebar Chat Section
 with st.sidebar:
-    st.header("Model Settings")
-    
-    temperature = st.slider(
-        "Temperature",
-        min_value=0.0,
-        max_value=1.0,
-        value=st.session_state.temperature,
-        step=0.1,
-        help="Higher values make the output more random, lower values make it more focused and deterministic."
-    )
-    st.session_state.temperature = temperature
-    
-    # Add experiment mode toggle to sidebar
-    experiment_mode = st.checkbox("Experiment Mode", value=st.session_state.experiment_mode)
-    st.session_state.experiment_mode = experiment_mode
-    
-    # Display current settings
-    st.write("Current Settings:")
-    st.write(f"- Temperature: {st.session_state.temperature:.1f}")
-    st.write(f"- Experiment Mode: {'On' if st.session_state.experiment_mode else 'Off'}")
+    st.header("Chat Section")
+    st.markdown("""Interact with the chatbot by typing your queries below.""")
 
+# Load data and embeddings
 df = pd.read_csv(merged_path, low_memory=False)
 
 contexts = df['Context'].tolist()
@@ -86,7 +64,7 @@ if groq_api_key:
     groq_chat = ChatGroq(
         api_key=groq_api_key,
         model_name="llama-3.2-90b-vision-preview",
-        temperature=st.session_state.temperature  # Use the temperature from the slider
+        temperature=0.7  # Fixed temperature
     )
 
 # Chat interface
@@ -110,15 +88,7 @@ if user_question:
     # Find the most similar context
     with st.spinner("Finding the most similar context..."):
         similar_context, similar_response, similarity_score = find_most_similar_context(user_question, context_embeddings)
-    
-    # Show experiment data if enabled
-    if st.session_state.experiment_mode:
-        with st.spinner("Loading experiment data..."):
-            st.write("Similar Context:", similar_context)
-            st.write("Suggested Response:", similar_response)
-            st.write("Similarity Score:", f"{similarity_score:.4f}")
-            st.write("Current Temperature:", f"{st.session_state.temperature:.1f}")
-    
+
     # Construct the prompt
     prompt = f"""You are an AI Powered Chatbot who provide remedies to queries, your remedies should always be confident and never sound lacking. Always sound 
     emotionally strong and give confidence
