@@ -29,7 +29,7 @@ def load_or_compute_embeddings(df, model):
 if 'experiment_mode' not in st.session_state:
     st.session_state.experiment_mode = False
 if 'temperature' not in st.session_state:
-    st.session_state.temperature = 0.75
+    st.session_state.temperature = 0.7
 
 df = pd.read_csv(merged_path)
 contexts = df['Context'].tolist()
