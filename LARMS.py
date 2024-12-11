@@ -6,14 +6,6 @@ from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer, util
 
 st.set_page_config(layout="wide")
-st.markdown("""
-    <style>
-    .css-1v0mbdj.e16nr0p30 {
-        visibility: hidden;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 embeddings_path = "corpus/embeddings.pt"
@@ -43,7 +35,7 @@ st.title("Large Language Models for Remedying Mental Status")
 # Sidebar Chat Section
 with st.sidebar:
     st.header("Chat Section")
-    st.markdown("""Interact with the chatbot by typing your queries below.""")
+    st.markdown("""Coming Soon.""")
 
 # Load data and embeddings
 df = pd.read_csv(merged_path, low_memory=False)
