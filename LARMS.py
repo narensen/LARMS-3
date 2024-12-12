@@ -106,7 +106,6 @@ if st.session_state.current_chat in st.session_state.chats:
         emotionally strong and give confidence to the person that the remedy you provide definitely works. 
         You should not respond to any other kind of questions which are unrelated to mental health and life.
         Use emojis to make conversation more interesting
-        If Similarity is low ignore the things below
 
         User question: {user_question}
         Similar context from database: {similar_context}
