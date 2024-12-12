@@ -37,12 +37,33 @@ def load_or_compute_embeddings(df, model):
 if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = []
 
+if 'chats' not in st.session_state:
+    st.session_state.chats = {}
+
+if 'current_chat' not in st.session_state:
+    st.session_state.current_chat = "default"
+
 st.title("Large Language Models for Remedying Mental Status")
 
-# Sidebar Chat Section
+# Sidebar Chat Management Section
 with st.sidebar:
-    st.header("Chat Section")
-    st.markdown("""Coming Soon.""")
+    st.header("Chat Management")
+    chat_name = st.text_input("Enter new chat name:", key="new_chat_name")
+    
+    if st.button("Create New Chat") and chat_name:
+        if chat_name not in st.session_state.chats:
+            st.session_state.chats[chat_name] = []
+            st.session_state.current_chat = chat_name
+        else:
+            st.warning("Chat name already exists.")
+
+    if st.session_state.chats:
+        st.selectbox("Select Chat:", options=list(st.session_state.chats.keys()), key="chat_selector", 
+                     on_change=lambda: st.session_state.update({"current_chat": st.session_state.chat_selector}))
+
+    st.markdown("---")
+    st.button("Delete Current Chat", 
+              on_click=lambda: st.session_state.chats.pop(st.session_state.current_chat, None) and st.session_state.update({"current_chat": "default"}))
 
 # Load data and embeddings
 df = pd.read_csv(merged_path, low_memory=False)
@@ -71,46 +92,44 @@ def chat_input_area():
     user_question = st.text_input("Type your message here...", key="user_input", label_visibility="collapsed")
     return user_question
 
-if st.session_state.conversation_history:
-    for message in st.session_state.conversation_history:
-        if message['role'] == 'assistant':
-            st.chat_message("assistant").markdown(message['content'])
-        elif message['role'] == 'user':
-            st.chat_message("user").markdown(message['content'])
+# Update the chat history of the current chat
+if st.session_state.current_chat in st.session_state.chats:
+    if user_question := st.chat_input("Type your message here..."):
+        st.session_state.chats[st.session_state.current_chat].append({"role": "user", "content": user_question})
 
-user_question = st.chat_input("Type your message here...")
+        # Find the most similar context
+        with st.spinner("Finding the most similar context..."):
+            similar_context, similar_response, similarity_score = find_most_similar_context(user_question, context_embeddings)
 
-if user_question:
-    # Add user input to conversation history
-    st.session_state.conversation_history.append({"role": "user", "content": user_question})
+        # Construct the prompt
+        prompt = f"""You are an AI Powered Chatbot who provides remedies to queries. Your remedies should always be confident and never sound lacking. Always sound 
+        emotionally strong and give confidence to the person that the remedy you provide definitely works. 
+        You should not respond to any other kind of questions which are unrelated to mental health and life.
+        Use emojis to make conversation more interesting
+        If Similarity is low ignore the things below
 
-    # Find the most similar context
-    with st.spinner("Finding the most similar context..."):
-        similar_context, similar_response, similarity_score = find_most_similar_context(user_question, context_embeddings)
+        User question: {user_question}
+        Similar context from database: {similar_context}
+        Suggested response: {similar_response}
+        Similarity score: {similarity_score}
+        
+        """
 
-    # Construct the prompt
-    prompt = f"""You are an AI Powered Chatbot who provides remedies to queries. Your remedies should always be confident and never sound lacking. Always sound 
-    emotionally strong and give confidence to the person that the remedy you provide definitely works. 
-    You should not respond to any other kind of questions which are unrelated to mental health and life.
-    use emojis make conversation interesting. if similarity is low ignore the things below
+        # Generate the AI response
+        with st.spinner("Generating AI response..."):
+            try:
+                response = groq_chat.invoke(st.session_state.chats[st.session_state.current_chat] + [{"role": "user", "content": prompt}])
+                ai_response = response.content
 
-    User question: {user_question}
-    Similar context from database: {similar_context}
-    Suggested response: {similar_response}
-    Similarity score: {similarity_score}
-    
-    """
+                # Add AI response to conversation history
+                st.session_state.chats[st.session_state.current_chat].append({"role": "assistant", "content": ai_response})
 
-    # Generate the AI response
-    with st.spinner("Generating AI response..."):
-        try:
-            response = groq_chat.invoke(st.session_state.conversation_history + [{"role": "user", "content": prompt}])
-            ai_response = response.content
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
 
-            # Add AI response to conversation history
-            st.session_state.conversation_history.append({"role": "assistant", "content": ai_response})
-
-            # Display AI response dynamically
-            st.chat_message("assistant").markdown(ai_response)
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
+# Display current chat history dynamically
+for message in st.session_state.chats.get(st.session_state.current_chat, []):
+    if message['role'] == 'assistant':
+        st.chat_message("assistant").markdown(message['content'])
+    elif message['role'] == 'user':
+        st.chat_message("user").markdown(message['content'])
