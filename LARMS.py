@@ -73,10 +73,10 @@ def chat_input_area():
 
 if st.session_state.conversation_history:
     for message in st.session_state.conversation_history:
-        if message['role'] == 'user':
-            st.chat_message("user").markdown(message['content'])
-        else:
+        if message['role'] == 'assistant':
             st.chat_message("assistant").markdown(message['content'])
+        elif message['role'] == 'user':
+            st.chat_message("user").markdown(message['content'])
 
 user_question = st.chat_input("Type your message here...")
 
@@ -89,9 +89,8 @@ if user_question:
         similar_context, similar_response, similarity_score = find_most_similar_context(user_question, context_embeddings)
 
     # Construct the prompt
-    prompt = f"""You are an AI Powered Chatbot who provide remedies to queries, your remedies should always be confident and never sound lacking. Always sound 
-    emotionally strong and give confidence
-    to the person that the remedy you provide definitely works. 
+    prompt = f"""You are an AI Powered Chatbot who provides remedies to queries. Your remedies should always be confident and never sound lacking. Always sound 
+    emotionally strong and give confidence to the person that the remedy you provide definitely works. 
     You should not respond to any other kind of questions which are unrelated to mental health and life.
 
     User question: {user_question}
@@ -114,3 +113,12 @@ if user_question:
             st.chat_message("assistant").markdown(ai_response)
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
+
+# Feature additions: Display similarity score and context
+if 'last_similarity_score' in st.session_state:
+    st.sidebar.markdown(f"**Similarity Score**: {st.session_state.last_similarity_score:.2f}")
+    st.sidebar.markdown(f"**Matched Context**: {st.session_state.last_context}")
+
+if user_question:
+    st.session_state.last_similarity_score = similarity_score
+    st.session_state.last_context = similar_context
