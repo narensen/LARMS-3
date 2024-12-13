@@ -43,6 +43,9 @@ if 'chats' not in st.session_state:
 if 'current_chat' not in st.session_state:
     st.session_state.current_chat = "Chat 1"
 
+if 'chat_counter' not in st.session_state:
+    st.session_state.chat_counter = 1
+
 st.title("Large Language Models for Remedying Mental Status")
 
 # Sidebar Chat Management Section
@@ -50,7 +53,8 @@ with st.sidebar:
     st.header("Chats")
     
     if st.button("+", key="create_chat"):
-        new_chat_name = f"Chat {len(st.session_state.chats) + 1}"
+        st.session_state.chat_counter += 1
+        new_chat_name = f"Chat {st.session_state.chat_counter}"
         st.session_state.chats[new_chat_name] = []
         st.session_state.current_chat = new_chat_name
 
