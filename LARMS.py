@@ -41,29 +41,22 @@ if 'chats' not in st.session_state:
     st.session_state.chats = {}
 
 if 'current_chat' not in st.session_state:
-    st.session_state.current_chat = "default"
+    st.session_state.current_chat = "Chat 1"
 
 st.title("Large Language Models for Remedying Mental Status")
 
 # Sidebar Chat Management Section
 with st.sidebar:
-    st.header("Chat Management")
-    chat_name = st.text_input("Enter new chat name:", key="new_chat_name")
+    st.header("Chats")
     
-    if st.button("Create New Chat") and chat_name:
-        if chat_name not in st.session_state.chats:
-            st.session_state.chats[chat_name] = []
-            st.session_state.current_chat = chat_name
-        else:
-            st.warning("Chat name already exists.")
+    if st.button("+", key="create_chat"):
+        new_chat_name = f"Chat {len(st.session_state.chats) + 1}"
+        st.session_state.chats[new_chat_name] = []
+        st.session_state.current_chat = new_chat_name
 
     if st.session_state.chats:
         st.selectbox("Select Chat:", options=list(st.session_state.chats.keys()), key="chat_selector", 
                      on_change=lambda: st.session_state.update({"current_chat": st.session_state.chat_selector}))
-
-    st.markdown("---")
-    st.button("Delete Current Chat", 
-              on_click=lambda: st.session_state.chats.pop(st.session_state.current_chat, None) and st.session_state.update({"current_chat": "default"}))
 
 # Load data and embeddings
 df = pd.read_csv(merged_path, low_memory=False)
@@ -102,10 +95,9 @@ if st.session_state.current_chat in st.session_state.chats:
             similar_context, similar_response, similarity_score = find_most_similar_context(user_question, context_embeddings)
 
         # Construct the prompt
-        prompt = f"""You are an AI Powered Chatbot who provides remedies to queries. Your remedies should always be confident and never sound lacking. Always sound 
-        emotionally strong and give confidence to the person that the remedy you provide definitely works. 
-        You should not respond to any other kind of questions which are unrelated to mental health and life.
-        If Similarity is low ignore the things below (Do not mention this in the response)
+        prompt = f"""You are an AI Powered Chatbot who provides remedies to queries. Your remedies should always be confident and never sound lacking. Always sound \
+        emotionally strong and give confidence to the person that the remedy you provide definitely works. \
+        You should not respond to any other kind of questions which are unrelated to mental health and life.\n        If Similarity is low ignore the things below (Do not mention this in the response)
 
         User question: {user_question}
         Similar context from database: {similar_context}
