@@ -4,6 +4,12 @@ import pandas as pd
 import os
 from langchain_groq import ChatGroq
 from sentence_transformers import SentenceTransformer, util
+import nltk
+from nltk.translate.bleu_score import sentence_bleu
+from nltk.translate.meteor_score import meteor_score
+
+# Download necessary NLTK data
+nltk.download('punkt')
 
 st.set_page_config(layout="wide")
 st.markdown("""
@@ -116,8 +122,25 @@ if st.session_state.current_chat in st.session_state.chats:
                 response = groq_chat.invoke(st.session_state.chats[st.session_state.current_chat] + [{"role": "user", "content": prompt}])
                 ai_response = response.content
 
-                # Add AI response to conversation history
-                st.session_state.chats[st.session_state.current_chat].append({"role": "assistant", "content": ai_response})
+                # Calculate metrics
+                bleu_score = sentence_bleu([similar_response.split()], ai_response.split())
+                meteor = meteor_score([similar_response], ai_response)
+
+                # Add AI response to conversation history with metrics
+                st.session_state.chats[st.session_state.current_chat].append({
+                    "role": "assistant", 
+                    "content": ai_response,
+                    "metrics": {
+                        "BLEU Score": bleu_score,
+                        "METEOR Score": meteor,
+                        "Similarity Score": similarity_score
+                    }
+                })
+                
+                # Display metrics in the UI
+                st.write(f"BLEU Score: {bleu_score:.4f}")
+                st.write(f"METEOR Score: {meteor:.4f}")
+                st.write(f"Similarity Score: {similarity_score:.4f}")
 
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
@@ -126,5 +149,8 @@ if st.session_state.current_chat in st.session_state.chats:
 for message in st.session_state.chats.get(st.session_state.current_chat, []):
     if message['role'] == 'assistant':
         st.chat_message("assistant").markdown(message['content'])
+        if 'metrics' in message:
+            for metric, score in message['metrics'].items():
+                st.chat_message("assistant").markdown(f"**{metric}**: {score:.4f}")
     elif message['role'] == 'user':
         st.chat_message("user").markdown(message['content'])
