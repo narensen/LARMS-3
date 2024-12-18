@@ -7,6 +7,7 @@ from sentence_transformers import SentenceTransformer, util
 import nltk
 from nltk.translate.bleu_score import sentence_bleu
 from nltk.translate.meteor_score import meteor_score
+from collections import Counter
 
 # Download necessary NLTK data
 nltk.download('punkt')
@@ -90,6 +91,12 @@ if groq_api_key:
         temperature=0.7  # Fixed temperature
     )
 
+# Function to compute distinct n-grams
+def distinct_ngrams(text, n):
+    words = nltk.word_tokenize(text.lower())
+    ngrams = [tuple(words[i:i+n]) for i in range(len(words)-n+1)]
+    return len(set(ngrams)) / len(ngrams) if ngrams else 0
+
 # Chat interface
 def chat_input_area():
     user_question = st.text_input("Type your message here...", key="user_input", label_visibility="collapsed")
@@ -126,6 +133,10 @@ if st.session_state.current_chat in st.session_state.chats:
                 bleu_score = sentence_bleu([similar_response.split()], ai_response.split())
                 meteor = meteor_score([similar_response], ai_response)
 
+                # N-gram diversity
+                distinct_2 = distinct_ngrams(ai_response, 2)
+                distinct_3 = distinct_ngrams(ai_response, 3)
+
                 # Add AI response to conversation history with metrics
                 st.session_state.chats[st.session_state.current_chat].append({
                     "role": "assistant", 
@@ -133,7 +144,9 @@ if st.session_state.current_chat in st.session_state.chats:
                     "metrics": {
                         "BLEU Score": bleu_score,
                         "METEOR Score": meteor,
-                        "Similarity Score": similarity_score
+                        "Similarity Score": similarity_score,
+                        "Distinct-2": distinct_2,
+                        "Distinct-3": distinct_3
                     }
                 })
                 
@@ -141,6 +154,8 @@ if st.session_state.current_chat in st.session_state.chats:
                 st.write(f"BLEU Score: {bleu_score:.4f}")
                 st.write(f"METEOR Score: {meteor:.4f}")
                 st.write(f"Similarity Score: {similarity_score:.4f}")
+                st.write(f"Distinct-2: {distinct_2:.4f}")
+                st.write(f"Distinct-3: {distinct_3:.4f}")
 
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
