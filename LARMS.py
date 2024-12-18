@@ -13,6 +13,8 @@ from collections import Counter
 nltk.download('punkt')
 
 st.set_page_config(layout="wide")
+
+# Hide Streamlit's default menu bar
 st.markdown("""
     <style>
     .css-1v0mbdj.e16nr0p30 {
@@ -20,6 +22,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 embeddings_path = "corpus/embeddings.pt"
@@ -27,9 +30,9 @@ merged_path = 'corpus/merged_dataset.csv'
 
 def load_or_compute_embeddings(df, model):
     embeddings_file = embeddings_path
-    
+
     if os.path.exists(embeddings_file):
-        context_embeddings = torch.load(embeddings_file, weights_only=True)
+        context_embeddings = torch.load(embeddings_file)
         print("Loaded pre-computed embeddings")
     else:
         print("Computing embeddings...")
@@ -37,40 +40,16 @@ def load_or_compute_embeddings(df, model):
         context_embeddings = model.encode(contexts, convert_to_tensor=True)
         torch.save(context_embeddings, embeddings_file)
         print("Saved embeddings to file")
-    
+
     return context_embeddings
-
-# Initialize session states
-if 'conversation_history' not in st.session_state:
-    st.session_state.conversation_history = []
-
-if 'chats' not in st.session_state:
-    st.session_state.chats = {}
-
-if 'current_chat' not in st.session_state:
-    st.session_state.current_chat = "Chat 1"
-
-if 'chat_counter' not in st.session_state:
-    st.session_state.chat_counter = 1
 
 st.title("Large Language Models for Remedying Mental Status")
 
-# Sidebar Chat Management Section
-with st.sidebar:
-    st.header("Chats")
-    
-    if st.button("+", key="create_chat"):
-        st.session_state.chat_counter += 1
-        new_chat_name = f"Chat {st.session_state.chat_counter}"
-        st.session_state.chats[new_chat_name] = []
-        st.session_state.current_chat = new_chat_name
-
-    if st.session_state.chats:
-        st.selectbox("Select Chat:", options=list(st.session_state.chats.keys()), key="chat_selector", 
-                     on_change=lambda: st.session_state.update({"current_chat": st.session_state.chat_selector}))
-
 # Load data and embeddings
 df = pd.read_csv(merged_path, low_memory=False)
+
+# Ensure all responses are strings
+df['Response'] = df['Response'].fillna("").astype(str)
 
 contexts = df['Context'].tolist()
 responses = df['Response'].tolist()
@@ -97,75 +76,50 @@ def distinct_ngrams(text, n):
     ngrams = [tuple(words[i:i+n]) for i in range(len(words)-n+1)]
     return len(set(ngrams)) / len(ngrams) if ngrams else 0
 
-# Chat interface
-def chat_input_area():
-    user_question = st.text_input("Type your message here...", key="user_input", label_visibility="collapsed")
-    return user_question
+# User input and processing
+user_question = st.text_input("Type your message here...", key="user_input")
 
-# Update the chat history of the current chat
-if st.session_state.current_chat in st.session_state.chats:
-    if user_question := st.chat_input("Type your message here..."):
-        st.session_state.chats[st.session_state.current_chat].append({"role": "user", "content": user_question})
+if user_question:
+    # Find the most similar context
+    with st.spinner("Finding the most similar context..."):
+        similar_context, similar_response, similarity_score = find_most_similar_context(user_question, context_embeddings)
 
-        # Find the most similar context
-        with st.spinner("Finding the most similar context..."):
-            similar_context, similar_response, similarity_score = find_most_similar_context(user_question, context_embeddings)
+    # Ensure similar_response is a string
+    if not isinstance(similar_response, str):
+        similar_response = str(similar_response)
 
-        # Construct the prompt
-        prompt = f"""You are an AI Powered Chatbot who provides remedies to queries. Your remedies should always be confident and never sound lacking. Always sound \
-        emotionally strong and give confidence to the person that the remedy you provide definitely works. \
-        You should not respond to any other kind of questions which are unrelated to mental health and life.\n        If Similarity is low ignore the things below (Do not mention this in the response)
+    # Construct the prompt
+    prompt = f"""You are an AI Powered Chatbot who provides remedies to queries. Your remedies should always be confident and never sound lacking. Always sound \
+    emotionally strong and give confidence to the person that the remedy you provide definitely works. \
+    You should not respond to any other kind of questions which are unrelated to mental health and life.
 
-        User question: {user_question}
-        Similar context from database: {similar_context}
-        Suggested response: {similar_response}
-        Similarity score: {similarity_score}
-        
-        """
+    User question: {user_question}
+    Similar context from database: {similar_context}
+    Suggested response: {similar_response}
+    Similarity score: {similarity_score}
+    """
 
-        # Generate the AI response
-        with st.spinner("Generating AI response..."):
-            try:
-                response = groq_chat.invoke(st.session_state.chats[st.session_state.current_chat] + [{"role": "user", "content": prompt}])
-                ai_response = response.content
+    # Generate the AI response
+    with st.spinner("Generating AI response..."):
+        try:
+            response = groq_chat.invoke([{"role": "user", "content": prompt}])
+            ai_response = str(response.content)  # Ensure AI response is a string
 
-                # Calculate metrics
-                bleu_score = sentence_bleu([similar_response.split()], ai_response.split())
-                meteor = meteor_score([similar_response], ai_response)
+            # Calculate metrics
+            bleu_score = sentence_bleu([similar_response.split()], ai_response.split())
+            meteor = meteor_score([similar_response], ai_response)
 
-                # N-gram diversity
-                distinct_2 = distinct_ngrams(ai_response, 2)
-                distinct_3 = distinct_ngrams(ai_response, 3)
+            # N-gram diversity
+            distinct_2 = distinct_ngrams(ai_response, 2)
+            distinct_3 = distinct_ngrams(ai_response, 3)
 
-                # Add AI response to conversation history with metrics
-                st.session_state.chats[st.session_state.current_chat].append({
-                    "role": "assistant", 
-                    "content": ai_response,
-                    "metrics": {
-                        "BLEU Score": bleu_score,
-                        "METEOR Score": meteor,
-                        "Similarity Score": similarity_score,
-                        "Distinct-2": distinct_2,
-                        "Distinct-3": distinct_3
-                    }
-                })
-                
-                # Display metrics in the UI
-                st.write(f"BLEU Score: {bleu_score:.4f}")
-                st.write(f"METEOR Score: {meteor:.4f}")
-                st.write(f"Similarity Score: {similarity_score:.4f}")
-                st.write(f"Distinct-2: {distinct_2:.4f}")
-                st.write(f"Distinct-3: {distinct_3:.4f}")
+            # Display response and metrics
+            st.markdown(f"**AI Response:** {ai_response}")
+            st.write(f"BLEU Score: {bleu_score:.4f}")
+            st.write(f"METEOR Score: {meteor:.4f}")
+            st.write(f"Similarity Score: {similarity_score:.4f}")
+            st.write(f"Distinct-2: {distinct_2:.4f}")
+            st.write(f"Distinct-3: {distinct_3:.4f}")
 
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
-
-# Display current chat history dynamically
-for message in st.session_state.chats.get(st.session_state.current_chat, []):
-    if message['role'] == 'assistant':
-        st.chat_message("assistant").markdown(message['content'])
-        if 'metrics' in message:
-            for metric, score in message['metrics'].items():
-                st.chat_message("assistant").markdown(f"**{metric}**: {score:.4f}")
-    elif message['role'] == 'user':
-        st.chat_message("user").markdown(message['content'])
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
