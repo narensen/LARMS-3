@@ -28,7 +28,7 @@ st.markdown("""
 dotenv.load_dotenv()
 
 # Configuration
-BASE_DIR = os.path.expanduser("~/Documents/LARMS-1.2")
+BASE_DIR = os.path.expanduser(".")
 EMBEDDINGS_PATH = os.path.join(BASE_DIR, "corpus/embeddings.pt")
 MERGED_PATH = os.path.join(BASE_DIR, "corpus/merged_dataset.csv")
 
