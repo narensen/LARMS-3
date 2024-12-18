@@ -23,11 +23,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Load the embedding model
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
+# File paths
 embeddings_path = "corpus/embeddings.pt"
 merged_path = 'corpus/merged_dataset.csv'
 
+# Function to load or compute embeddings
 def load_or_compute_embeddings(df, model):
     embeddings_file = embeddings_path
 
@@ -48,13 +51,11 @@ st.title("Large Language Models for Remedying Mental Status")
 # Load data and embeddings
 df = pd.read_csv(merged_path, low_memory=False)
 
-# Ensure all responses are strings
-df['Response'] = df['Response'].fillna("").astype(str)
-
 contexts = df['Context'].tolist()
 responses = df['Response'].tolist()
 context_embeddings = load_or_compute_embeddings(df, embedding_model)
 
+# Function to find the most similar context
 def find_most_similar_context(question, context_embeddings):
     question_embedding = embedding_model.encode(question, convert_to_tensor=True)
     similarities = util.pytorch_cos_sim(question_embedding, context_embeddings)
@@ -84,10 +85,6 @@ if user_question:
     with st.spinner("Finding the most similar context..."):
         similar_context, similar_response, similarity_score = find_most_similar_context(user_question, context_embeddings)
 
-    # Ensure similar_response is a string
-    if not isinstance(similar_response, str):
-        similar_response = str(similar_response)
-
     # Construct the prompt
     prompt = f"""You are an AI Powered Chatbot who provides remedies to queries. Your remedies should always be confident and never sound lacking. Always sound \
     emotionally strong and give confidence to the person that the remedy you provide definitely works. \
@@ -103,11 +100,11 @@ if user_question:
     with st.spinner("Generating AI response..."):
         try:
             response = groq_chat.invoke([{"role": "user", "content": prompt}])
-            ai_response = str(response.content)  # Ensure AI response is a string
+            ai_response = response.content
 
             # Calculate metrics
             bleu_score = sentence_bleu([similar_response.split()], ai_response.split())
-            meteor = meteor_score([similar_response], ai_response)
+            meteor = meteor_score([nltk.word_tokenize(similar_response)], nltk.word_tokenize(ai_response))
 
             # N-gram diversity
             distinct_2 = distinct_ngrams(ai_response, 2)
