@@ -176,7 +176,7 @@ def main():
         # Generate the AI response
         with st.spinner("Generating AI response..."):
             try:
-                groq_chat = initialize_groq(os.getenv("GROQ_API_KEY", "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"), selected_model, temperature)
+                groq_chat = initialize_groq(os.getenv("GROQ_API_KEY", YOUR_API_KEY), selected_model, temperature)
                 response = groq_chat.invoke([{"role": "user", "content": prompt}])
                 ai_response = response.content
 
