@@ -8,3 +8,4 @@ textblob==0.18.0.post0
 textstat==0.7.4
 torch==2.5.1
 fastapi
+uvicorn
