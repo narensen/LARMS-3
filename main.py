@@ -26,26 +26,26 @@ app.add_middleware(
 )
 
 # Mount the static directory to serve static files
-app.mount("/static", StaticFiles(directory="/home/naren/Documents/LARMS-2/static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Serve the index.html file at the root URL
 @app.get("/")
 async def read_index():
-    return FileResponse("/home/naren/Documents/LARMS-2/static/index.html")
+    return FileResponse("static/index.html")
 
 # Load the SentenceTransformer model
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Paths for dataset and embeddings
-BASE_DIR = os.path.expanduser("")
-EMBEDDINGS_PATH = os.path.join(BASE_DIR, "/home/naren/Documents/LARMS-2/corpus/embeddings.pt")
-MERGED_PATH = os.path.join(BASE_DIR, "/home/naren/Documents/LARMS-2/corpus/merged_dataset.csv")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # or your specific path
+EMBEDDINGS_PATH = os.path.join(BASE_DIR, "corpus/embeddings.pt")
+MERGED_PATH = os.path.join(BASE_DIR, "corpus/merged_dataset.csv")
 
 # Ensure paths exist
 os.makedirs(os.path.dirname(EMBEDDINGS_PATH), exist_ok=True)
 os.makedirs(os.path.dirname(MERGED_PATH), exist_ok=True)
 
-# Groq initialization
+# Groq initialization function
 def initialize_groq(api_key, model_name, temperature):
     try:
         return ChatGroq(
@@ -68,7 +68,7 @@ def load_or_compute_embeddings(df):
 # Request model
 class UserInput(BaseModel):
     user_question: str
-    selected_model: str = "llama-3.3-70b-specdec"  # Default model
+    selected_model: str = "llama-3.2-90b-vision-preview"  # Default model
     temperature: float = 0.7  # Default temperature
 
 @app.post("/chat")
@@ -87,23 +87,32 @@ async def chat_with_model(input_data: UserInput):
         similar_context = contexts[max_idx]
         similar_response = responses[max_idx]
 
-        # Initialize Groq
-        groq_chat = initialize_groq(os.getenv("GROQ_API_KEY", "gsk_DEFAULT_KEY"), input_data.selected_model, input_data.temperature)
+        # Initialize Groq with the provided parameters
+        groq_chat = initialize_groq(
+            api_key=os.getenv("GROQ_API_KEY", "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"),
+            model_name=input_data.selected_model,
+            temperature=input_data.temperature
+        )
 
-        # Create prompt
+        # Create the prompt for the Groq model
         prompt = f"""
-        You are an LLM purposefully designed for Mental Health Conversations.
-        User question: {input_data.user_question}
+        Your name is LARMS purposefully designed for Mental Health Conversations. Be Concise and make sure user question and context are similar.
+        This is the User question: {input_data.user_question}
         Context: {similar_context}
         Response: {similar_response}
         """
 
-        # Get response from Groq
+        # Get the response from Groq
         response = groq_chat.invoke([{"role": "user", "content": prompt}])
+        if not response or not hasattr(response, 'content'):
+            raise ValueError("No valid response received from Groq")
+
         ai_response = response.content
 
         # Return AI response
         return {"ai_response": ai_response}
 
     except Exception as e:
+        # Log the error and return a detailed message
+        print(f"Error occurred: {e}")  # For server-side debugging
         raise HTTPException(status_code=500, detail=f"Error processing chat response: {e}")

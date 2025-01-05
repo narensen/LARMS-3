@@ -1,109 +1,208 @@
-body {
-    font-family: Arial, sans-serif;
+/* Modern Chat UI Styles */
+
+/* Body and HTML reset */
+body, html {
+    background-color: #ffffff;
     margin: 0;
     padding: 0;
-    background-color: #f5f7fa;
-}
-
-.chat-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 80vh;
-    width: 500%;
-    max-width: 700px;
-    margin: 0 auto;
-    margin-top: 50px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    box-shadow: 0 -4px -10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+    height: 100%;
     overflow: hidden;
 }
 
+/* Chat Container */
+.chat-container {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 1200px;
+    width: 100%;
+    height: 100vh;
+    background: #ffffff;
+    border-left: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
 .chat-header {
-    padding: 15px;
-    background-color: #000000;
+    padding: 20px;
+    background: linear-gradient(135deg, #000000, #1a1a1a);
     color: white;
     text-align: center;
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    border-radius: 0;
+    flex-shrink: 0;
 }
 
+/* Chat Box - Scrollable Area */
 .chat-box {
-    flex-grow: 1;
-    padding: 20px;
+    flex: 1;
     overflow-y: auto;
-    border-bottom: 1px solid #ddd;
-    background-color: #f9f9f9;
+    background-color: #ffffff;
+    padding: 32px 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* Adjusted to account for input box and footer */
+    height: calc(100vh - 240px);
+    margin-bottom: 120px; /* Added margin to prevent overlap */
 }
 
+/* Message Container */
+.message-container {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 20px;
+}
+
+/* Message Styles */
 .message {
-    padding: 10px;
-    margin: 10px 0;
+    padding: 14px 20px;
+    margin: 8px 0;
     border-radius: 20px;
-    max-width: 70%;
+    max-width: 60%;
+    font-size: 16px;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .message.question {
-    background-color: #000000;
+    background: linear-gradient(135deg, #000000, #1a1a1a);
     color: #ffffff;
-    align-self: flex-end;
-    text-align: right;
+    margin-left: auto;
+    border-bottom-right-radius: 8px;
+    transform-origin: right;
 }
 
 .message.answer {
-    background-color: #e0e0e0;
-    color: #333;
-    align-self: flex-start;
+    background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+    color: #2c2c2c;
+    margin-right: auto;
+    border-bottom-left-radius: 8px;
+    transform-origin: left;
 }
 
+/* Input Area */
 .input-box {
-    display: flex;
-    padding: 15px;
-    border-top: 1px solid #ddd;
+    padding: 8px 16px; /* Increased horizontal padding */
     background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    position: fixed; /* Changed to fixed */
+    bottom: 80px; /* Adjusted to be above footer */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    max-width: 800px;
+    border-radius: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
 }
 
 .input-field {
     flex-grow: 1;
-    padding: 10px;
-    border: 1px solid #bdbdbd;
-    border-radius: 25px;
+    padding: 14px 16px; /* Adjusted padding */
+    border: none;
     outline: none;
-    font-size: 16px;
-    transition: border-color 0.3s ease-in-out;
-}
-
-.input-field:focus {
-    border-color: #000000;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    height: auto;
+    min-height: 24px;
+    background-color: transparent;
+    margin-right: 8px; /* Added margin between input and button */
 }
 
 .send-btn {
     padding: 10px 20px;
-    margin-left: 10px;
-    background-color: #424242;
+    background: linear-gradient(135deg, #000000, #1a1a1a);
     border: none;
     color: white;
-    border-radius: 25px;
+    border-radius: 20px;
     cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease-in-out;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px; /* Added minimum width */
 }
 
 .send-btn:hover {
-    background-color: #000000;
+    background: linear-gradient(135deg, #1a1a1a, #000000);
+    transform: scale(1.05);
 }
 
+/* Footer */
 .chat-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
     text-align: center;
-    padding: 10px;
-    font-size: 12px;
-    color: #666;
-    background-color: #f5f7fa;
+    padding: 12px;
+    background-color: #ffffff;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    flex-shrink: 0;
+    height: 20px; /* Added fixed height */
 }
 
-p {
-    font-size: medium;
-    color: #4a4a4a;
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .chat-container {
+        border: none;
+    }
+    
+    .message-container {
+        padding: 0 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .input-box {
+        width: 90%;
+        bottom: 75px; /* Adjusted for mobile */
+        padding: 8px 12px; /* Smaller padding on mobile */
+    }
+    
+    .message {
+        max-width: 80%;
+    }
+    
+    .chat-box {
+        padding: 20px 0;
+        margin-bottom: 100px; /* Adjusted for mobile */
+    }
+    
+    .message-container {
+        padding: 0 10px;
+    }
+
+    .send-btn {
+        padding: 8px 16px; /* Smaller padding on mobile */
+        min-width: 60px; /* Smaller minimum width on mobile */
+    }
 }
