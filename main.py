@@ -96,7 +96,7 @@ async def chat_with_model(input_data: UserInput):
 
         # Create the prompt for the Groq model
         prompt = f"""
-        Your name is LARMS purposefully designed for Mental Health Conversations. Be Concise and make sure user question and context are similar.
+        Your name is LARMS purposefully designed for Mental Health Conversations. Be Concise and make sure user question and context are similar. This is designed more like a messaging app and you have to talk like you are messaging
         This is the User question: {input_data.user_question}
         Context: {similar_context}
         Response: {similar_response}
