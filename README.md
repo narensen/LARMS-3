@@ -73,15 +73,6 @@ groq_api_key = "your_api_key"
 streamlit run LARMS.py
 ```
 
-2. Access the web interface at `http://localhost:8501`
-
-3. Use the sidebar to:
-   - Adjust the temperature (0.0 - 1.0)
-   - Toggle experiment mode
-   - View current settings
-
-4. Enter your message in the text area and receive AI-generated responses
-
 ## Features Explanation
 
 ### Temperature Setting
